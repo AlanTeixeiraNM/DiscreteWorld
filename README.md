@@ -1,2 +1,2 @@
 # DiscreteWorld
-Repository for source code of the project DiscreteWorld.
+This repository contains source code of the project DiscreteWorld.

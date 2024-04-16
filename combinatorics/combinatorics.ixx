@@ -1,6 +1,14 @@
-﻿export module combinatorics;
+﻿/*These are algorithms for solving basic combinatorics problems. Their main purpose is to be
+used as example code in the context of learning modern C++, but can be freely used, copied and modified
+for other use cases. They may change as I find new ways of improving performance and design.
+
+Author: Alan Teixeira
+*/
+
+export module combinatorics;
 import std;
 
+namespace combinatorics{
 //---------------------------------------concepts-------------------------------------------
 template<typename OutR,typename T>
 concept pushing_back_range = std::ranges::output_range<OutR,std::ranges::range_value_t<OutR>>&&
@@ -82,4 +90,5 @@ void vpermutations(const std::vector<T>& vi, std::basic_ostream<char>& oss)
     std::vector<T> v;
     v.reserve(vi.size());
     vpermutations(vi,v, oss);
+}
 }

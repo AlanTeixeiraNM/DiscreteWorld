@@ -1,10 +1,19 @@
-﻿#include <ranges>
+﻿/*These are algorithms for solving basic combinatorics problems. Their main purpose is to be
+used as example code in the context of learning modern C++, but can be freely used, copied and modified
+for other use cases. They may change as I find new ways of improving performance and design.
+
+Author: Alan Teixeira
+*/
+#ifndef COMBINATORICS_HPP
+#define COMBINATORICS_HPP
+
+#include <ranges>
 #include <concepts>
 #include <vector>
 #include <iostream>
 #include <span>
 
-
+namespace combinatorics{
 //-----------------------------------------range_base------------------------------------------------
 template<typename OutR,typename T>
 concept pushing_back_range = std::ranges::output_range<OutR,std::ranges::range_value_t<OutR>>&&
@@ -83,19 +92,6 @@ void vpermutations(const std::vector<T>& vi, std::basic_ostream<char>& oss)
     v.reserve(vi.size());
     vpermutations(vi,v, oss);
 }
-
-
-int main()
-{
-    std::vector v{1,2,3};
-    std::vector<std::vector<int>> vv;
-    vpermutations(v,vv);
-    for(auto v:vv)
-    {
-        for(auto i:v)
-        {
-            std::cout<<i;
-        }
-        std::cout<<'\n';
-    }
 }
+
+#endif

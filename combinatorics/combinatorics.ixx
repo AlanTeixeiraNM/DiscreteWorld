@@ -3,10 +3,17 @@ used as example code in the context of learning modern C++, but can be freely us
 for other use cases. They may change as I find new ways of improving performance and design.
 
 Author: Alan Teixeira
+
+Environment configuration:
+-compiler: msvc version 1935, using "/std:c++latest" compilation option and C++23 standard
+           for Intellisense (which still have problems with modules)
+-editor: VS Code 1.88.1 with C/C++ and C/C++ Extension Pack extensions
 */
 
 export module combinatorics;
-import std;
+import std;//In order to import the std as a module you need the std.ifc binary file. 
+            //You can either compile it or refer to it on the compilation task if you already have it somewhere
+
 
 namespace combinatorics{
 //---------------------------------------concepts-------------------------------------------

@@ -3,15 +3,18 @@ used as example code in the context of learning modern C++, but can be freely us
 for other use cases. They may change as I find new ways of improving performance and design.
 
 Author: Alan Teixeira
+
+Environment configuration:
+-compiler: g++ (Rev3, Built by MSYS2 project) 13.2.0 with the compilation option "-std=c++23"
+-editor: VS Code 1.88.1 with C/C++ and C/C++ Extension Pack extensions
 */
 #ifndef COMBINATORICS_HPP
 #define COMBINATORICS_HPP
 
-#include <ranges>
+#include <ranges>//At the time of writing g++ still doesn't fully support module implemmentation of the std
 #include <concepts>
 #include <vector>
 #include <iostream>
-#include <span>
 
 namespace combinatorics{
 //-----------------------------------------range_base------------------------------------------------

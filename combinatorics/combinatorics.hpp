@@ -1,12 +1,13 @@
 ﻿/*These are algorithms for solving basic combinatorics problems. Their main purpose is to be
 used as example code in the context of learning modern C++, but can be freely used, copied and modified
-for other use cases. They may change as I find new ways of improving performance and design.
+for other use cases. More algorithms will be implemented and the implementation may change 
+as I find new ways of improving performance and design.
 
 Author: Alan Teixeira
 
 Environment configuration:
--compiler: g++ (Rev3, Built by MSYS2 project) 13.2.0 with the compilation option "-std=c++23"
--editor: VS Code 1.88.1 with C/C++ and C/C++ Extension Pack extensions
+-compiler: g++  with the compilation option "-std=c++23"
+-editor: VS Code with C/C++ and C/C++ Extension Pack extensions
 */
 #ifndef COMBINATORICS_HPP
 #define COMBINATORICS_HPP
@@ -17,83 +18,141 @@ Environment configuration:
 #include <iostream>
 
 namespace combinatorics{
-//-----------------------------------------range_base------------------------------------------------
-template<typename OutR,typename T>
-concept pushing_back_range = std::ranges::output_range<OutR,std::ranges::range_value_t<OutR>>&&
-std::same_as<std::ranges::range_value_t<OutR>,T>&& std::copy_constructible<T>&&
-requires(T t, OutR r)
-{
-    {r.push_back(t)};
-};
+//-----------------------------------------concepts------------------------------------------------
+//input_set models the set of elements on which the algorithms are applied
+template<typename InR>
+concept input_set = std::ranges::input_range<InR> && std::ranges::sized_range<InR>&&
+std::copy_constructible<std::ranges::range_value_t<InR>> && std::destructible<std::ranges::range_value_t<InR>>;
 
-template<typename T,pushing_back_range<std::vector<T>> PBR>
-void vpermutations(const std::vector<T>& vi, std::vector<T>& pref, PBR& R)
+//--------------------------------------basic algorithms----------------------------------
+//simple factorial function with some values hard-coded
+constexpr size_t fac(size_t N)
 {
-    if(vi.empty())
+    switch (N)
+    {
+        case 0:
+        case 1:
+            {
+                return 1;
+            }
+        case 2:
+            {
+                return 2;
+            }
+        case 3:
+            {
+                return 6;
+            }
+        case 4:
+            {
+                return 24;
+            }
+        case 5:
+            {
+                return 120;
+            }
+        case 6:
+            {
+                return 720;
+            }
+        case 7:
+            {
+                return 5'040;
+            }
+        case 8:
+            {
+                return 40'320;
+            }
+        case 9:
+            {
+                return 362'880;
+            }
+        case 10:
+            {
+                return 3'628'800;
+            }
+        case 11:
+            {
+                return 39'916'800;
+            }
+        case 12:
+            {
+                return 479'001'600;
+            }
+        case 13:
+            {
+                return 6'227'020'800;
+            }
+        case 14:
+            {
+                return 87'178'291'200;
+            }
+        case 15:
+            {
+                return 1'307'674'368'000;
+            }
+        case 16:
+            {
+                return 20'922'789'888'000;
+            }
+        case 17:
+            {
+                return 355'687'428'096'000;
+            }
+        case 18:
+            {
+                return 6'402'373'705'728'000;
+            }
+        case 19:
+            {
+                return 121'645'100'408'832'000;
+            }
+        case 20:
+            {
+                return 2'432'902'008'176'640'000;
+            }
+    }
+    return N*fac(N-1);
+}
+
+//returns the number of permutations of elements of an input_set
+export template<input_set In>
+constexpr size_t npermutations(const In& in)
+{
+    size_t N{std::ranges::size(in)};
+    return fac(N);
+}
+
+//------------------------------vector based algorithms------------------------------
+//returns the permutations of elements of an input_set as a vector of vectors
+template<input_set In>
+void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 
+    std::vector<std::vector<std::ranges::range_value_t<In>>>& R)
+{
+    if(std::ranges::empty(in))
     {
         R.push_back(pref);
     }
-    for(std::size_t i{};i<vi.size();++i)
+    for(std::size_t i{};i<std::ranges::size(in);++i)
     {
-        std::vector<T> rem(vi.begin(),vi.begin()+i);
-        rem.insert(rem.end(),vi.begin()+i+1,vi.end());
-        pref.push_back(*(vi.begin()+i));
-        vpermutations(rem,pref, R);
+        std::vector<std::ranges::range_value_t<In>> rem(std::ranges::cbegin(in),std::ranges::cbegin(in)+i);
+        rem.insert(rem.cend(),std::ranges::cbegin(in)+i+1,std::ranges::cend(in));
+        pref.push_back(*(std::ranges::cbegin(in)+i));
+        vpermutations(rem,pref,R);
         pref.pop_back();
     }
 }
 
-template<typename T,pushing_back_range<std::vector<T>> PBR>
-void vpermutations(const std::vector<T>& vi, PBR& R)
+export template<input_set In>
+std::vector<std::vector<std::ranges::range_value_t<In>>> vpermutations(const In& in)
 {
-    std::vector<T> v;
-    v.reserve(vi.size());
-    vpermutations(vi,v, R);
-}
-
-//----------------------------------------stream_base---------------------------------------------------
-template<typename T>
-concept ostream_insertable = 
-requires(T t, std::basic_ostream<char>& oss)
-{
-    {oss<<t}->std::same_as<std::basic_ostream<char>&>;
-};
-
-template<ostream_insertable T>
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& oss,const std::vector<T>& v)
-{
-    for(auto a :v)
-    {
-        oss<<a;
-    }
-    oss<<'\n';
-    return oss;
-}
-
-template<std::copy_constructible T>
-requires std::destructible<T>
-void vpermutations(const std::vector<T>& vi, std::vector<T>& pref, std::basic_ostream<char>& oss)
-{
-    if(vi.empty())
-    {
-        oss<<pref;
-    }
-    for(std::size_t i{};i<vi.size();++i)
-    {
-        std::vector<T> rem(vi.begin(),vi.begin()+i);
-        rem.insert(rem.end(),vi.begin()+i+1,vi.end());
-        pref.push_back(*(vi.begin()+i));
-        vpermutations(rem,pref, oss);
-        pref.pop_back();
-    }
-}
-
-template<std::copy_constructible T>
-void vpermutations(const std::vector<T>& vi, std::basic_ostream<char>& oss)
-{
-    std::vector<T> v;
-    v.reserve(vi.size());
-    vpermutations(vi,v, oss);
+    std::vector<std::ranges::range_value_t<In>> v;
+    v.reserve(std::ranges::size(in));
+    size_t N{npermutations(in)};
+    std::vector<std::vector<std::ranges::range_value_t<In>>> R;
+    R.reserve(N);
+    vpermutations(in,v,R);
+    return R;
 }
 }
 

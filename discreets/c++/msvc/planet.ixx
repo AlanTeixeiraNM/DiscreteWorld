@@ -1,6 +1,14 @@
 ﻿//Implementation of Elite(1984) planet generator algorithm according to the descriptions found
-//in https://www.bbcelite.com/
+//on https://www.bbcelite.com/
+
+//Author: Alan Teixeira
+
 //This version compiles with newer msvc versions
+
+
+module;
+#include <cstdint>//for the integer type uint16_t that is guaranteed to have exactly 16 bit
+//provided it is supported by the implementation
 
 export module planets;
 import std;
@@ -11,21 +19,21 @@ namespace planet_generator
 export class Planet
 {
 public:
-    Planet(std::string_view gov, const std::string& econ, unsigned short tech_lvl, unsigned short popu, 
-    unsigned short prod, std::string_view speci, unsigned short avr, std::string_view nm);
+    Planet(std::string_view gov, std::string_view econ, uint16_t tech_lvl, uint16_t popu, 
+    uint16_t prod, std::string_view speci, uint16_t avr, std::string_view nm);
     Planet(const Planet& P)=default;
     Planet(Planet&& P)=default;
     Planet& operator=(const Planet& P)=default;
     Planet& operator=(Planet&& P)=default;
-    void info();
+    void info()const;
 private:
     std::string government;
     std::string economy;
-    unsigned short technology_lvl;
-    unsigned short population;
-    unsigned short productivity;
+    uint16_t technology_lvl;
+    uint16_t population;
+    uint16_t productivity;
     std::string species;
-    unsigned short av_radius;
+    uint16_t av_radius;
     std::string name;
 };
 
@@ -33,43 +41,42 @@ private:
 export class Planet_Sequence
 {
 //government generator
-    friend unsigned short government(const Planet_Sequence& PS);
+    friend uint16_t government(const Planet_Sequence& PS);
 
 //economy level generetor
-    friend unsigned short economy_lvl(const Planet_Sequence& PS);
+    friend uint16_t economy_lvl(const Planet_Sequence& PS);
 
 //economy type generator
     friend std::string economy(const Planet_Sequence& PS);
 
 //technology level generator
-    friend unsigned short tech_lvl(const Planet_Sequence& PS);
+    friend uint16_t tech_lvl(const Planet_Sequence& PS);
 
 //population size generator
-    friend unsigned short population(const Planet_Sequence& PS);
+    friend uint16_t population(const Planet_Sequence& PS);
 
 //productivity points generator
-    friend unsigned short productivity(const Planet_Sequence& PS);
+    friend uint16_t productivity(const Planet_Sequence& PS);
 
 //native species generator
     friend std::string species(const Planet_Sequence& PS);
 
 //planet's radius generator
-    friend unsigned short av_radius(const Planet_Sequence& PS);
+    friend uint16_t av_radius(const Planet_Sequence& PS);
 
 //planet's name generator
-    friend std::string name(Planet_Sequence& PS);
+    friend std::string name(const Planet_Sequence& PS);
 
 //sequence twist algorithm
-    friend void twist(Planet_Sequence& PS);
+    friend void twist(const Planet_Sequence& PS);
 public:
-    Planet_Sequence()=default;
-    void next();
-    Planet current_planet();    
+    void next()const;
+    Planet current_planet()const;    
 private:
 //3 16-bit initial values
-    unsigned short u0=0x5a4a;
-    unsigned short u1=0x0248;
-    unsigned short u2=0xb753;
+    mutable uint16_t u0=0x5a4a;
+    mutable uint16_t u1=0x0248;
+    mutable uint16_t u2=0xb753;
 };
 
 } 

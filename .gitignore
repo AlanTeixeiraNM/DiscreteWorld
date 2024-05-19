@@ -1,4 +1,7 @@
 *pdb
 *.obj
 *.ilk
-*.exe*.vscode
+*.exe
+*.vscode
+*.json 
+*.ifc 

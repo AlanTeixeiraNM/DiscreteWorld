@@ -3,15 +3,15 @@
 #include <iostream>
 
 //government types
-std::unordered_map<unsigned short,std::string> Gov {{0,"Anarchy"},{1,"Feudal"},{2,"Multi-government"},{3,"Dictatorship"}
+std::unordered_map<uint16_t,const char*> Gov {{0,"Anarchy"},{1,"Feudal"},{2,"Multi-government"},{3,"Dictatorship"}
 ,{4,"Communist"},{5,"Confederacy"},{6,"Democracy"},{7,"Corporate State"}};
 
 //economy levels
-std::unordered_map<unsigned short, std::string> Econ_lvl{{0,"Rich"},{5,"Rich"},{1,"Average"},{6,"Average"},{2,"Poor"}
+std::unordered_map<uint16_t, const char*> Econ_lvl{{0,"Rich"},{5,"Rich"},{1,"Average"},{6,"Average"},{2,"Poor"}
 ,{7,"Poor"},{3,"Mainly"},{4,"Mainly"}};
 
 //pair of letters for planet's name generation
-std::unordered_map<unsigned short, std::string> Two_letter
+std::unordered_map<uint16_t, const char*> Two_letter
 {{128,"AL"},
  {129,"LE"},
  {130,"XE"},
@@ -46,12 +46,12 @@ std::unordered_map<unsigned short, std::string> Two_letter
  {159,"ON"}
 };
 
-planet_generator::Planet::Planet(const std::string& gov, const std::string& econ, unsigned short tech_lvl, 
-    unsigned short popu, unsigned short prod, const std::string& speci, unsigned short avr, const std::string& nm)
+planet_generator::Planet::Planet(const std::string& gov, const std::string& econ, uint16_t tech_lvl, 
+    uint16_t popu, uint16_t prod, const std::string& speci, uint16_t avr, const std::string& nm)
     :government{gov},economy{econ},technology_lvl{tech_lvl},population{popu},productivity{prod},species{speci},
     av_radius{avr},name{nm}{}
 
-void planet_generator::Planet::info()
+void planet_generator::Planet::info()const
 {
     std::cout<<"Planet name: "<<name<<'\n';
     std::cout<<"Government: "<<government<<'\n';
@@ -63,23 +63,23 @@ void planet_generator::Planet::info()
     std::cout<<"Average radius: "<<av_radius<<" Km"<<'\n';
 }
 
-unsigned short planet_generator::government(const Planet_Sequence& PS)
+uint16_t planet_generator::government(const Planet_Sequence& PS)
 {
-    unsigned short us0=(PS.u1 & 0b0000000000001000);
-    unsigned short us1=(PS.u1 & 0b0000000000010000);
-    unsigned short us2=(PS.u1 & 0b0000000000100000);
+    uint16_t us0=(PS.u1 & 0b0000000000001000);
+    uint16_t us1=(PS.u1 & 0b0000000000010000);
+    uint16_t us2=(PS.u1 & 0b0000000000100000);
     us0>>=3;
     us1>>=3;
     us2>>=3;
     return us0+us1+us2;
 }
 
-unsigned short planet_generator::economy_lvl(const Planet_Sequence& PS)
+uint16_t planet_generator::economy_lvl(const Planet_Sequence& PS)
 {
-    unsigned short gov= government(PS);
-    unsigned short us0=(PS.u0 & 0b0000000100000000);
-    unsigned short us1=(PS.u0 & 0b0000001000000000);
-    unsigned short us2=(PS.u0 & 0b0000010000000000);
+    uint16_t gov= government(PS);
+    uint16_t us0=(PS.u0 & 0b0000000100000000);
+    uint16_t us1=(PS.u0 & 0b0000001000000000);
+    uint16_t us2=(PS.u0 & 0b0000010000000000);
     if(gov==0 || gov==1)
     {
         us1 |= 0b0000001000000000;
@@ -93,7 +93,7 @@ unsigned short planet_generator::economy_lvl(const Planet_Sequence& PS)
 
 std::string planet_generator::economy(const Planet_Sequence& PS)
 {
-    unsigned short us=(PS.u0 & 0b0000001000000000);
+    uint16_t us=(PS.u0 & 0b0000001000000000);
     us>>=9;
     if(us==0)
         return " Industrial";
@@ -101,38 +101,38 @@ std::string planet_generator::economy(const Planet_Sequence& PS)
         return " Agricultural";
 }
 
-unsigned short planet_generator::tech_lvl(const Planet_Sequence& PS)
+uint16_t planet_generator::tech_lvl(const Planet_Sequence& PS)
 {
-    unsigned short eco_lvl=economy_lvl(PS);
-    unsigned short flipped_eco_lvl = eco_lvl ^ 0b111;
-    unsigned short gov=government(PS);
-    unsigned short u1=(PS.u1 & 0b1111111100000000);
+    uint16_t eco_lvl=economy_lvl(PS);
+    uint16_t flipped_eco_lvl = eco_lvl ^ 0b111;
+    uint16_t gov=government(PS);
+    uint16_t u1=(PS.u1 & 0b1111111100000000);
     u1>>=8;
     u1 &= 0b11;
 
     return flipped_eco_lvl + u1 + gov/2;
 }
 
-unsigned short planet_generator::population(const Planet_Sequence& PS)
+uint16_t planet_generator::population(const Planet_Sequence& PS)
 {
     return tech_lvl(PS)*4 + economy_lvl(PS) + government(PS) + 1;
 }
 
-unsigned short planet_generator::productivity(const Planet_Sequence& PS)
+uint16_t planet_generator::productivity(const Planet_Sequence& PS)
 {
-    unsigned short eco_lvl=economy_lvl(PS);
-    unsigned short flipped_eco_lvl = eco_lvl ^ 0b111;
+    uint16_t eco_lvl=economy_lvl(PS);
+    uint16_t flipped_eco_lvl = eco_lvl ^ 0b111;
     return (flipped_eco_lvl+3)*(government(PS)+4)*population(PS)*8;
 }
 
 std::string planet_generator::species(const Planet_Sequence& PS)
 {
-    unsigned short b7s2_l= PS.u2 & 0b0000000010000000;
+    uint16_t b7s2_l= PS.u2 & 0b0000000010000000;
     b7s2_l>>=7;
     if(!b7s2_l)
         return "Human Colonials";
     std::string spc;
-    unsigned short A=PS.u2 & 0b0001110000000000;
+    uint16_t A=PS.u2 & 0b0001110000000000;
     A>>=10;
     switch (A)
     {
@@ -197,7 +197,7 @@ std::string planet_generator::species(const Planet_Sequence& PS)
     default:
         break;
     }
-    unsigned short tmp = PS.u2 & 0b0000001100000000;
+    uint16_t tmp = PS.u2 & 0b0000001100000000;
     tmp>>=8;
     A+=tmp;
     tmp= (A & 0b0000000000000111);
@@ -233,37 +233,35 @@ std::string planet_generator::species(const Planet_Sequence& PS)
     return spc;
 }
 
-unsigned short planet_generator::av_radius(const Planet_Sequence& PS)
+uint16_t planet_generator::av_radius(const Planet_Sequence& PS)
 {
-    unsigned short s2_h= (PS.u2 & 0b1111111100000000);
-    unsigned short s1_h= (PS.u1 & 0b1111111100000000);
+    uint16_t s2_h= (PS.u2 & 0b1111111100000000);
+    uint16_t s1_h= (PS.u1 & 0b1111111100000000);
     s2_h>>=8;
     s1_h>>=8;
     s2_h&=0b1111;
     return (s2_h + 11)*256 + s1_h;
 }
 
-void planet_generator::twist(Planet_Sequence& PS)
+void planet_generator::twist(const Planet_Sequence& PS)
 {
-    //std::cout<<std::setbase(16)<<PS.u0<<" "<<PS.u1<<" "<<PS.u2<<'\n';
-    unsigned short tmp=PS.u0;
+    uint16_t tmp=PS.u0;
     PS.u0=PS.u1;
     PS.u1=PS.u2;
     PS.u2=(tmp+ PS.u0+PS.u1)%65536;
-    //std::cout<<std::setbase(16)<<PS.u0<<" "<<PS.u1<<" "<<PS.u2<<'\n';
 }
 
-std::string planet_generator::name(Planet_Sequence& PS)
+std::string planet_generator::name(const Planet_Sequence& PS)
 {
     std::string tl;
-    unsigned short s0_l= (PS.u0 & 0b0000000001000000);
+    uint16_t s0_l= (PS.u0 & 0b0000000001000000);
     s0_l>>=6;
-    unsigned short count{};
+    uint16_t count{};
     if(s0_l)
         count =4;
     else
         count=3;
-    unsigned short s2_h =(PS.u2 & 0b0001111100000000);
+    uint16_t s2_h =(PS.u2 & 0b0001111100000000);
     s2_h>>=8;
     if(s2_h)
     {   
@@ -271,33 +269,34 @@ std::string planet_generator::name(Planet_Sequence& PS)
         tl=Two_letter[s2_h];
         --count;
     }
-    for(unsigned short i{1};i<=count;++i)
+    for(uint16_t i{1};i<=count;++i)
     {
         twist(PS);
         s2_h =(PS.u2 & 0b0001111100000000);
         s2_h>>=8;
         if(s2_h)
+        {
             s2_h+=128;
             tl+=Two_letter[s2_h];
+        }
     }
-    //std::cout<<tl;
     return tl;
 }
 
-planet_generator::Planet planet_generator::Planet_Sequence::current_planet()
+planet_generator::Planet planet_generator::Planet_Sequence::current_planet()const
 {
     std::string gover = Gov[government(*this)];
     std::string econo = Econ_lvl[economy_lvl(*this)]+economy(*this);
-    unsigned short technology_lvl = tech_lvl(*this);
-    unsigned short popula = population(*this);
-    unsigned short producti = productivity(*this);
+    uint16_t technology_lvl = tech_lvl(*this);
+    uint16_t popula = population(*this);
+    uint16_t producti = productivity(*this);
     std::string spec = species(*this);
-    unsigned short av_rad = av_radius(*this);
+    uint16_t av_rad = av_radius(*this);
     std::string nam = name(*this);
     return Planet(gover,econo,technology_lvl,popula,producti,spec,av_rad,nam);
 }
 
-void planet_generator::Planet_Sequence::next()
+void planet_generator::Planet_Sequence::next()const
 {
     twist(*this);
 }

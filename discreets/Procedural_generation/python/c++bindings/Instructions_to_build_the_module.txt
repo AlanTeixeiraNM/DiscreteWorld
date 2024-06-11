@@ -10,7 +10,7 @@ https://pybind11.readthedocs.io/en/stable
 
 3-Adjust "Path" on the CMakeLists.txt file in c++bindings folder
 
-4-Go to folder build, open a command line interface (PowerShell, Bashh, etc.) there, call the following
+4-Create a subfolder called build, go into it, open a command line interface (PowerShell, Bashh, etc.) there, call the following
 	cmake -G "Generator option" ../
 
 "Generator option" depends on the build system you use. For example if you want a Python module for a Microsoft installation of Python I recomend 

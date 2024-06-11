@@ -46,12 +46,13 @@ std::unordered_map<uint16_t, const char*> Two_letter
  {159,"ON"}
 };
 
-planet_generator::Planet::Planet(const std::string& gov, const std::string& econ, uint16_t tech_lvl, 
-    uint16_t popu, uint16_t prod, const std::string& speci, uint16_t avr, const std::string& nm)
+planet_generator::Planet::Planet(const std::string& gov, std::string_view econ, uint16_t tech_lvl, 
+    uint16_t popu, uint16_t prod, std::string_view speci, uint16_t avr, std::string_view nm,
+    const std::array<uint16_t,3>& col)
     :government{gov},economy{econ},technology_lvl{tech_lvl},population{popu},productivity{prod},species{speci},
-    av_radius{avr},name{nm}{}
+    av_radius{avr},name{nm},color{col}{}
 
-void planet_generator::Planet::info()const
+void planet_generator::Planet::info()
 {
     std::cout<<"Planet name: "<<name<<'\n';
     std::cout<<"Government: "<<government<<'\n';
@@ -61,9 +62,10 @@ void planet_generator::Planet::info()const
     std::cout<<"Productivity: "<<productivity<<" million credits"<<'\n';
     std::cout<<"Species: "<<species<<'\n';
     std::cout<<"Average radius: "<<av_radius<<" Km"<<'\n';
+    std::cout<<"Surface color (RGB): "<<"("<<color[0]/255.0<<","<<color[1]/255.0<<","<<color[2]/255.<<")";
 }
 
-uint16_t planet_generator::government(const Planet_Sequence& PS)
+uint16_t planet_generator::government(Planet_Sequence& PS)
 {
     uint16_t us0=(PS.u1 & 0b0000000000001000);
     uint16_t us1=(PS.u1 & 0b0000000000010000);
@@ -74,7 +76,7 @@ uint16_t planet_generator::government(const Planet_Sequence& PS)
     return us0+us1+us2;
 }
 
-uint16_t planet_generator::economy_lvl(const Planet_Sequence& PS)
+uint16_t planet_generator::economy_lvl(Planet_Sequence& PS)
 {
     uint16_t gov= government(PS);
     uint16_t us0=(PS.u0 & 0b0000000100000000);
@@ -91,7 +93,7 @@ uint16_t planet_generator::economy_lvl(const Planet_Sequence& PS)
     return us0+us1+us2;
 }
 
-std::string planet_generator::economy(const Planet_Sequence& PS)
+std::string planet_generator::economy(Planet_Sequence& PS)
 {
     uint16_t us=(PS.u0 & 0b0000001000000000);
     us>>=9;
@@ -101,7 +103,7 @@ std::string planet_generator::economy(const Planet_Sequence& PS)
         return " Agricultural";
 }
 
-uint16_t planet_generator::tech_lvl(const Planet_Sequence& PS)
+uint16_t planet_generator::tech_lvl(Planet_Sequence& PS)
 {
     uint16_t eco_lvl=economy_lvl(PS);
     uint16_t flipped_eco_lvl = eco_lvl ^ 0b111;
@@ -113,19 +115,19 @@ uint16_t planet_generator::tech_lvl(const Planet_Sequence& PS)
     return flipped_eco_lvl + u1 + gov/2;
 }
 
-uint16_t planet_generator::population(const Planet_Sequence& PS)
+uint16_t planet_generator::population(Planet_Sequence& PS)
 {
     return tech_lvl(PS)*4 + economy_lvl(PS) + government(PS) + 1;
 }
 
-uint16_t planet_generator::productivity(const Planet_Sequence& PS)
+uint16_t planet_generator::productivity(Planet_Sequence& PS)
 {
     uint16_t eco_lvl=economy_lvl(PS);
     uint16_t flipped_eco_lvl = eco_lvl ^ 0b111;
     return (flipped_eco_lvl+3)*(government(PS)+4)*population(PS)*8;
 }
 
-std::string planet_generator::species(const Planet_Sequence& PS)
+std::string planet_generator::species(Planet_Sequence& PS)
 {
     uint16_t b7s2_l= PS.u2 & 0b0000000010000000;
     b7s2_l>>=7;
@@ -233,7 +235,7 @@ std::string planet_generator::species(const Planet_Sequence& PS)
     return spc;
 }
 
-uint16_t planet_generator::av_radius(const Planet_Sequence& PS)
+uint16_t planet_generator::av_radius(Planet_Sequence& PS)
 {
     uint16_t s2_h= (PS.u2 & 0b1111111100000000);
     uint16_t s1_h= (PS.u1 & 0b1111111100000000);
@@ -243,7 +245,7 @@ uint16_t planet_generator::av_radius(const Planet_Sequence& PS)
     return (s2_h + 11)*256 + s1_h;
 }
 
-void planet_generator::twist(const Planet_Sequence& PS)
+void planet_generator::twist(Planet_Sequence& PS)
 {
     uint16_t tmp=PS.u0;
     PS.u0=PS.u1;
@@ -251,7 +253,7 @@ void planet_generator::twist(const Planet_Sequence& PS)
     PS.u2=(tmp+ PS.u0+PS.u1)%65536;
 }
 
-std::string planet_generator::name(const Planet_Sequence& PS)
+std::string planet_generator::name(Planet_Sequence& PS)
 {
     std::string tl;
     uint16_t s0_l= (PS.u0 & 0b0000000001000000);
@@ -283,8 +285,20 @@ std::string planet_generator::name(const Planet_Sequence& PS)
     return tl;
 }
 
-planet_generator::Planet planet_generator::Planet_Sequence::current_planet()const
+std::array<uint16_t,3> planet_generator::color(Planet_Sequence& PS)
 {
+    uint16_t r=(PS.u0 & 0b0000000011111111);
+    uint16_t g=(PS.u1 & 0b0000000011111111);
+    uint16_t b=(PS.u2 & 0b0000000011111111);
+    return std::array<uint16_t,3>{r,g,b};
+}
+
+planet_generator::Planet* planet_generator::Planet_Sequence::current_planet()
+{
+    if(planet_end)
+    {
+        return P.get();
+    }
     std::string gover = Gov[government(*this)];
     std::string econo = Econ_lvl[economy_lvl(*this)]+economy(*this);
     uint16_t technology_lvl = tech_lvl(*this);
@@ -293,10 +307,25 @@ planet_generator::Planet planet_generator::Planet_Sequence::current_planet()cons
     std::string spec = species(*this);
     uint16_t av_rad = av_radius(*this);
     std::string nam = name(*this);
-    return Planet(gover,econo,technology_lvl,popula,producti,spec,av_rad,nam);
+    std::array<uint16_t,3> col=color(*this);
+    auto ptr= new Planet(gover,econo,technology_lvl,popula,producti,spec,av_rad,nam,col);
+    P.reset(ptr);
+    planet_end=true;
+    return P.get();
 }
 
-void planet_generator::Planet_Sequence::next()const
+void planet_generator::Planet_Sequence::next()
 {
-    twist(*this);
+    if(planet_end)
+    {
+        twist(*this);
+    }
+    else
+    {
+        twist(*this);
+        twist(*this);
+        twist(*this);
+        twist(*this);
+    }
+    planet_end=false;
 }

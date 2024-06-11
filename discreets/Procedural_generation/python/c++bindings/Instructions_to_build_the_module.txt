@@ -1,0 +1,27 @@
+This manual explains how to build the Python shared module file necessary for the modules Planets and Draw_Planet to work.
+
+1-First install pybind11 as a regular Python package using pip:
+	pip install pybind11
+
+Pybind11 is the library we need to build binding code between C++ and Python. See more on
+https://pybind11.readthedocs.io/en/stable
+
+2-Get CMake. There many ways you can install CMake, mine came with a bunch of others binaries (including gcc compilers) from https://winlibs.com/. You can also intall from the official website https://cmake.org/, here you can get even a GUI for CMake projects called cmake-gui.
+
+3-Adjust "Path" on the CMakeLists.txt file in c++bindings folder
+
+4-Go to folder build, open a command line interface (PowerShell, Bashh, etc.) there, call the following
+	cmake -G "Generator option" ../
+
+"Generator option" depends on the build system you use. For example if you want a Python module for a Microsoft installation of Python I recomend 
+"Generator option" = "Visual Studio 17 2022" (you need VS 2022 installed)
+There are other options: "Ninja", "Unix Makefiles", "XCode". See more on https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
+
+5-Now, still from build folder, on command line interface, call
+	cmake --build . --config Release
+
+If everything went well it should be a shared library (extension .pyd on Windows and .so on Linux) file called something like "Elite_planets" in the build folder or inside a Release subfolder in the build folder (you only need this file, everything else generated can be deleted).
+
+6-At last adjust Planets.py and Draw_Planets.py paths according to your case
+
+Now you cand visualize simple representations of each planet in the sequence of Elite game. You can adapt all modules and algorithms if you want more elaborate drawings. 

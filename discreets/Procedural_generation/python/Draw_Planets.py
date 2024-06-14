@@ -17,7 +17,7 @@ def ellipse(cx,cy,a,b,angle):
     trt.up()
     trt.goto(x,y)
     trt.down()
-    trt.color('black')
+    trt.color('gray')
     for i in range(n):
         x = cx + a*math.cos(t)*math.cos(math.radians(angle))-b*math.sin(t)*math.sin(math.radians(angle))
         y = cy + a*math.cos(t)*math.sin(math.radians(angle))+b*math.sin(t)*math.cos(math.radians(angle))
@@ -38,6 +38,7 @@ Species: {planet.species()}\nRadius: {planet.radius()}Km
 Surface color (RGB): {colorarr[0],colorarr[1],colorarr[2]}'''
 
     trt.setup(width=width, height=height,starty=1)
+    trt.bgpic('resources/stars.gif')
     trt.hideturtle()
     trt.penup()
     trt.setheading(0)
@@ -54,7 +55,6 @@ Surface color (RGB): {colorarr[0],colorarr[1],colorarr[2]}'''
     trt.home()
     trt.speed(0)
     trt.colormode(1)
-    trt.color('black')
     trt.pendown()
     if planet.has_ring():
         ellipse(trt.xcor(),trt.ycor(),radius+100,radius/2,0)
@@ -74,7 +74,7 @@ Surface color (RGB): {colorarr[0],colorarr[1],colorarr[2]}'''
     trt.penup()
     trt.home()
     trt.colormode(1)
-    trt.color('black')
+    trt.color('white')
     trt.setheading(180)
     trt.forward(450)
     trt.setheading(90)

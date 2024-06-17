@@ -15,7 +15,7 @@ Environment configuration:
 #include <ranges>//At the time of writing g++ still doesn't fully support module implemmentation of the std
 #include <concepts>
 #include <vector>
-#include <iostream>
+
 
 namespace combinatorics{
 //-----------------------------------------concepts------------------------------------------------
@@ -24,7 +24,12 @@ template<typename InR>
 concept input_set = std::ranges::input_range<InR> && std::ranges::sized_range<InR>&&
 std::copy_constructible<std::ranges::range_value_t<InR>> && std::destructible<std::ranges::range_value_t<InR>>;
 
-//--------------------------------------basic algorithms----------------------------------
+//input_it models the iterators used to indicate a range of elements
+template<typename InIt>
+concept input_it= std::input_iterator<InIt> && std::copy_constructible<std::iter_value_t<InIt>> 
+&& std::destructible<std::iter_value_t<InIt>>;
+
+//--------------------------------------auxiliary algorithms----------------------------------
 //simple factorial function with some values hard-coded
 constexpr size_t fac(size_t N)
 {
@@ -123,8 +128,17 @@ constexpr size_t npermutations(const In& in)
     return fac(N);
 }
 
+//return the number of permutations of elements of the range [first,last)
+template<input_it In, std::sentinel_for<In>S>
+constexpr size_t npermutations(const In& first, const S& last)
+{
+    auto d{std::ranges::distance(first,last)};
+    size_t N{static_cast<size_t>(d)};
+    return fac(N);
+}
+
 //------------------------------vector based algorithms------------------------------
-//returns the permutations of elements of an input_set as a vector of vectors
+
 template<input_set In>
 void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 
     std::vector<std::vector<std::ranges::range_value_t<In>>>& R)
@@ -143,6 +157,7 @@ void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pr
     }
 }
 
+//returns the permutations of elements of an input_set as a vector of vectors
 export template<input_set In>
 std::vector<std::vector<std::ranges::range_value_t<In>>> vpermutations(const In& in)
 {
@@ -154,6 +169,21 @@ std::vector<std::vector<std::ranges::range_value_t<In>>> vpermutations(const In&
     vpermutations(in,v,R);
     return R;
 }
+
+//returns the permutations of elements of an range [first,last) as a vector of vectors
+template<input_it In, std::sentinel_for<In>S>
+std::vector<std::vector<std::iter_value_t<In>>> vpermutations(const In& first, const S& last)
+{
+    std::vector<std::iter_value_t<In>> v;
+    v.reserve(std::ranges::distance(first,last));
+    size_t N{npermutations(first,last)};
+    std::vector<std::vector<std::iter_value_t<In>>> R;
+    R.reserve(N);
+    std::vector<std::iter_value_t<In>> in(first,last);
+    vpermutations(in,v,R);
+    return R;
+}
+
 }
 
 #endif

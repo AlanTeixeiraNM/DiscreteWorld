@@ -1,5 +1,5 @@
 ﻿/*These are algorithms for solving basic combinatorics problems. Their main purpose is to be
-used as example code in the context of learning modern C++, but can be freely used, copied and modified
+used as example code in the context of learning modern C++, but can be freely used, copied and adapted
 for other use cases. More algorithms will be implemented and the implementation may change 
 as I find new ways of improving performance and design.
 
@@ -13,7 +13,7 @@ Environment configuration:
 
 export module combinatorics;
 import std;//In order to import the std as a module you need the std.ifc binary file. 
-            //You can either compile it or refer to it on the compilation task if you already have it somewhere
+            //You can either build it or refer to it on the build task if you already have it somewhere
 
 
 namespace combinatorics{
@@ -23,7 +23,12 @@ template<typename InR>
 concept input_set = std::ranges::input_range<InR> && std::ranges::sized_range<InR>&&
 std::copy_constructible<std::ranges::range_value_t<InR>> && std::destructible<std::ranges::range_value_t<InR>>;
 
-//--------------------------------------basic algorithms----------------------------------
+//input_it models the iterators used to indicate a range of elements
+template<typename InIt>
+concept input_it= std::input_iterator<InIt> && std::copy_constructible<std::iter_value_t<InIt>> 
+&& std::destructible<std::iter_value_t<InIt>>;
+
+//--------------------------------------auxiliary algorithms----------------------------------
 //simple factorial function with some values hard-coded
 constexpr size_t fac(size_t N)
 {
@@ -122,8 +127,17 @@ constexpr size_t npermutations(const In& in)
     return fac(N);
 }
 
+//returns the number of permutations of elements of the range [first, last)
+export template<input_it In, std::sentinel_for<In>S>
+constexpr size_t npermutations(const In& first, const S& last)
+{
+    auto d{std::ranges::distance(first,last)};
+    size_t N{static_cast<size_t>(d)};
+    return fac(N);
+}
+
 //---------------------------------------vector based algorithms-----------------------------
-//returns the permutations of elements of an input_set as a vector of vectors
+
 template<input_set In>
 void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 
     std::vector<std::vector<std::ranges::range_value_t<In>>>& R)
@@ -142,6 +156,7 @@ void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pr
     }
 }
 
+//returns the permutations of elements of an input_set as a vector of vectors
 export template<input_set In>
 std::vector<std::vector<std::ranges::range_value_t<In>>> vpermutations(const In& in)
 {
@@ -150,6 +165,20 @@ std::vector<std::vector<std::ranges::range_value_t<In>>> vpermutations(const In&
     size_t N{npermutations(in)};
     std::vector<std::vector<std::ranges::range_value_t<In>>> R;
     R.reserve(N);
+    vpermutations(in,v,R);
+    return R;
+}
+
+//returns the permutations of elements of the range [first,last) as a vector of vectors
+export template<input_it In, std::sentinel_for<In>S>
+std::vector<std::vector<std::iter_value_t<In>>> vpermutations(const In& first, const S& last)
+{
+    std::vector<std::iter_value_t<In>> v;
+    v.reserve(std::ranges::distance(first,last));
+    size_t N{npermutations(first,last)};
+    std::vector<std::vector<std::iter_value_t<In>>> R;
+    R.reserve(N);
+    std::vector<std::iter_value_t<In>> in(first,last);
     vpermutations(in,v,R);
     return R;
 }

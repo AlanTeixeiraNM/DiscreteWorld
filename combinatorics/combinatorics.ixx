@@ -30,113 +30,202 @@ concept input_it= std::input_iterator<InIt> && std::copy_constructible<std::iter
 
 //--------------------------------------auxiliary algorithms----------------------------------
 //simple factorial function with some values hard-coded
-constexpr size_t fac(size_t N)
+export template<std::integral T>
+constexpr double fac(T N)
 {
+    if(N<0)
+    {
+        throw std::domain_error{"N must be non-negative"};
+    }
+    
+    double result{1};
+    while(N>1)
+    {
     switch (N)
     {
         case 0:
         case 1:
             {
-                return 1;
+                return result;
             }
         case 2:
             {
-                return 2;
+                return result*2;
             }
         case 3:
             {
-                return 6;
+                return result*6;
             }
         case 4:
             {
-                return 24;
+                return result*24;
             }
         case 5:
             {
-                return 120;
+                return result*120;
             }
         case 6:
             {
-                return 720;
+                return result*720;
             }
         case 7:
             {
-                return 5'040;
+                return result*5'040;
             }
         case 8:
             {
-                return 40'320;
+                return result*40'320;
             }
         case 9:
             {
-                return 362'880;
+                return result*362'880;
             }
         case 10:
             {
-                return 3'628'800;
+                return result*3'628'800;
             }
         case 11:
             {
-                return 39'916'800;
+                return result*39'916'800;
             }
         case 12:
             {
-                return 479'001'600;
+                return result*479'001'600;
             }
         case 13:
             {
-                return 6'227'020'800;
+                return result*6'227'020'800;
             }
         case 14:
             {
-                return 87'178'291'200;
+                return result*87'178'291'200;
             }
         case 15:
             {
-                return 1'307'674'368'000;
+                return result*1'307'674'368'000;
             }
         case 16:
             {
-                return 20'922'789'888'000;
+                return result*20'922'789'888'000;
             }
         case 17:
             {
-                return 355'687'428'096'000;
+                return result*355'687'428'096'000;
             }
         case 18:
             {
-                return 6'402'373'705'728'000;
+                return result*6'402'373'705'728'000;
             }
         case 19:
             {
-                return 121'645'100'408'832'000;
+                return result*121'645'100'408'832'000;
             }
         case 20:
             {
-                return 2'432'902'008'176'640'000;
+                return result*2'432'902'008'176'640'000;
             }
     }
-    return N*fac(N-1);
+        result*=N;
+        --N;
+    }
+    return result;
 }
 
-//returns the number of permutations of elements of an input_set
-export template<input_set In>
+//partial factorial. 0 <= stop <= N.
+//stop indicates when to stop multiplying. For when dividing factorials.
+export template<std::integral T>
+constexpr double partfac(T N, T stop=0)
+{
+
+    if(N<0 || stop<0)
+    {
+        throw std::domain_error{"Integers must be non-negative"};
+    }
+    
+    double result{1};
+    while(N>1)
+    {
+        if(N==stop)
+        {
+            return result;
+        }
+        result*=N;
+        --N;
+    }
+    return result;    
+}
+
+//number of permutations of N distinct elements taken K to K without repetition.
+//0 <= K <= N.
+export template<std::integral T>
+constexpr double npermutations(T N, T K)
+{
+    if(N<0 || K<0)
+    {
+        throw std::domain_error{"Integers must be non-negative"};
+    }
+    if(K>N)
+    {
+        throw std::logic_error{"K must be smaller or equal to N"};
+    }
+    size_t k= static_cast<size_t>(N-K);
+    return partfac(static_cast<size_t>(N),k);
+}
+
+//number of permutations of N distinct elements taken K to K 
+//where each element may repeat K times
+export template<std::integral T>
+constexpr double npermutations_r(T N, T K)
+{
+    if(N<0 || K<0)
+    {
+        throw std::domain_error{"Integers must be non-negative"};
+    }
+        
+    return std::pow(static_cast<double>(N),static_cast<double>(K));
+}
+
+
+//number of combinations of N distinct elements taken K to K without repetition.
+//0 <= K <= N.
+export template<std::integral T>
+constexpr double ncombinations(T N, T K)
+{
+    if(N<0 || K<0)
+    {
+        throw std::domain_error{"Integers must be non-negative"};
+    }
+    if(K>N)
+    {
+        throw std::logic_error{"K must be smaller or equal to N"};
+    }
+    
+    size_t k1= N-K > K? static_cast<size_t>(N-K):static_cast<size_t>(K);
+    size_t k2= N-K > K? static_cast<size_t>(K): static_cast<size_t>(N-K);
+    return partfac(static_cast<size_t>(N),k1)/fac(k2);
+}
+
+
+//------------------------------input_set and input_it algorithms------------------------------
+//returns the number of permutations of elements of an input_set.
+//see that it returns size_t instead of double as the basic algorithms
+//this is because I think vectors with size_t size are enough for practical purposes
+template<input_set In>
 constexpr size_t npermutations(const In& in)
 {
     size_t N{std::ranges::size(in)};
-    return fac(N);
+    return static_cast<size_t>(fac(N));
 }
 
 //returns the number of permutations of elements of the range [first, last)
-export template<input_it In, std::sentinel_for<In>S>
+template<input_it In, std::sentinel_for<In>S>
 constexpr size_t npermutations(const In& first, const S& last)
 {
     auto d{std::ranges::distance(first,last)};
     size_t N{static_cast<size_t>(d)};
-    return fac(N);
+    return static_cast<size_t>(fac(N));
 }
 
-//---------------------------------------vector based algorithms-----------------------------
 
 template<input_set In>
 void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 

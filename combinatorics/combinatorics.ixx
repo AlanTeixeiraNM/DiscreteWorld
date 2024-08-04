@@ -205,28 +205,41 @@ constexpr double ncombinations(T N, T K)
     return partfac(static_cast<size_t>(N),k1)/fac(k2);
 }
 
+//number of combinations of N distinct element taken K to K
+//where any element may repeat K times
+export template<std::integral T>
+constexpr double ncombinations_r(T N, T K)
+{
+     if(N<0 || K<0)
+    {
+        throw std::domain_error{"Integers must be nonnegative"};
+    }
+    
+    return ncombinations(N + K -1, K);
+}
+
+//input: integral N, initializer_list of integrals {K1,K2,...,Kn}
+//number of permutations of N elements where there are
+//K1 indistinguishable elements of type 1, K2 indistinguishable elements of type 2, ...
+//and Kn indistinguishable elements of type n.
+//0 <= K1,K2,...,Kn <= N
+export template<std::integral T>
+double npermutations_lr(T N, std::initializer_list<T> IL)
+{
+    T s{std::accumulate(IL.begin(),IL.end(),0)};
+    if(s>N)
+    {
+        throw std::logic_error{"K1 + K2 + ... + Kn must be smaller or equal to N"};
+    }
+    double d=1;
+    for(auto i:IL)
+    {
+        d*=fac(i);
+    }
+    return fac(N)/d;
+}
 
 //------------------------------input_set and input_it algorithms------------------------------
-//returns the number of permutations of elements of an input_set.
-//see that it returns size_t instead of double as the basic algorithms
-//this is because I think vectors with size_t size are enough for practical purposes
-template<input_set In>
-constexpr size_t npermutations(const In& in)
-{
-    size_t N{std::ranges::size(in)};
-    return static_cast<size_t>(fac(N));
-}
-
-//returns the number of permutations of elements of the range [first, last)
-template<input_it In, std::sentinel_for<In>S>
-constexpr size_t npermutations(const In& first, const S& last)
-{
-    auto d{std::ranges::distance(first,last)};
-    size_t N{static_cast<size_t>(d)};
-    return static_cast<size_t>(fac(N));
-}
-
-
 template<input_set In>
 void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 
     std::vector<std::vector<std::ranges::range_value_t<In>>>& R)

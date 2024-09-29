@@ -132,7 +132,7 @@ constexpr double fac(T N)
 }
 
 //partial factorial. 0 <= stop <= N.
-//stop indicates when to stop multiplying. For when dividing factorials.
+//stop indicates when to stop multiplying. It returns N!/stop!.
 export template<std::integral T>
 constexpr double partfac(T N, T stop)
 {
@@ -140,6 +140,10 @@ constexpr double partfac(T N, T stop)
     if(N<0 || stop<0)
     {
         throw std::domain_error{"Integers must be non-negative"};
+    }
+    if(stop > N)
+    {
+        throw std::logic_error{"K must be smaller or equal to N"};
     }
     
     double result{1};
@@ -206,29 +210,29 @@ constexpr double ncombinations(T N, T K)
 }
 
 //number of K-combinations of N distinct elements
-//any element may repeat K times
+//each element may repeat K times
 export template<std::integral T>
 constexpr double ncombinations_r(T N, T K)
 {
      if(N<0 || K<0)
     {
-        throw std::domain_error{"Integers must be nonnegative"};
+        throw std::domain_error{"Integers must be non-negative"};
     }
     
     return ncombinations(N + K -1, K);
 }
 
 //input: integral N, initializer_list of integrals {K1,K2,...,Kn}
-//number of permutations of N elements
-//there are K1 indistinguishable elements of type 1, K2 indistinguishable elements of type 2, ... and Kn indistinguishable elements of type n.
-//0 <= K1,K2,...,Kn <= N
+//number of permutations of N elements where there are
+//K1 indistinguishable elements of type 1, K2 indistinguishable elements of type 2, ... and Kn indistinguishable elements of type n.
+//0 <= K1,K2,...,Kn <= N. K1+K2+...+Kn = N
 export template<std::integral T>
 double npermutations_lr(T N, std::initializer_list<T> IL)
 {
     T s{std::accumulate(IL.begin(),IL.end(),0)};
     if(s>N)
     {
-        throw std::logic_error{"K1 + K2 + ... + Kn must be smaller or equal to N"};
+        throw std::logic_error{"K1 + K2 + ... + Kn must be equal to N"};
     }
     double d=1;
     for(auto i:IL)
@@ -242,19 +246,22 @@ double npermutations_lr(T N, std::initializer_list<T> IL)
 
 template<input_set In, std::integral T>
 void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 
-    std::vector<std::vector<std::ranges::range_value_t<In>>>& R, T K)
+    std::vector<std::vector<std::ranges::range_value_t<In>>>& out, T K)
 {
-    if(std::ranges::size(pref) == K)
+    if(std::ranges::size(pref) == static_cast<size_t>(K))
     {
-        R.push_back(pref);
+        out.push_back(pref);
     }
-    for(std::size_t i{};i<std::ranges::size(in);++i)
+    else
     {
-        std::vector<std::ranges::range_value_t<In>> rem(std::ranges::cbegin(in),std::ranges::cbegin(in)+i);
-        rem.insert(rem.cend(),std::ranges::cbegin(in)+i+1,std::ranges::cend(in));
-        pref.push_back(*(std::ranges::cbegin(in)+i));
-        vpermutations(rem,pref,R,K);
-        pref.pop_back();
+        for(std::size_t i{};i<std::ranges::size(in);++i)
+        {
+            std::vector<std::ranges::range_value_t<In>> rem(std::ranges::cbegin(in),std::ranges::cbegin(in)+i);
+            rem.insert(rem.cend(),std::ranges::cbegin(in)+i+1,std::ranges::cend(in));
+            pref.push_back(*(std::ranges::cbegin(in)+i));
+            vpermutations(rem,pref,out,K);
+            pref.pop_back();
+        }
     }
 }
 
@@ -265,12 +272,12 @@ export template<input_set In, std::integral T>
 std::vector<std::vector<std::ranges::range_value_t<In>>> vpermutations(const In& in, T K)
 {
     std::vector<std::ranges::range_value_t<In>> v;
-    v.reserve(std::ranges::size(in));
+    v.reserve(static_cast<size_t>(K));
     size_t N{static_cast<size_t>(npermutations(static_cast<size_t>(std::ranges::size(in)),static_cast<size_t>(K)))};
-    std::vector<std::vector<std::ranges::range_value_t<In>>> R;
-    R.reserve(N);
-    vpermutations(in,v,R,K);
-    return R;
+    std::vector<std::vector<std::ranges::range_value_t<In>>> out;
+    out.reserve(N);
+    vpermutations(in,v,out,K);
+    return out;
 }
 
 //returns the K-permutations, without repetition, of elements in the range [first,last)
@@ -280,13 +287,63 @@ export template<input_it In, std::sentinel_for<In>S, std::integral T>
 std::vector<std::vector<std::iter_value_t<In>>> vpermutations(const In& first, const S& last, T K)
 {
     std::vector<std::iter_value_t<In>> v;
-    v.reserve(std::ranges::distance(first,last));
+    v.reserve(static_cast<size_t>(K));
     size_t N{static_cast<size_t>(npermutations(static_cast<size_t>(std::distance(first,last)),static_cast<size_t>(K)))};
-    std::vector<std::vector<std::iter_value_t<In>>> R;
-    R.reserve(N);
+    std::vector<std::vector<std::iter_value_t<In>>> out;
+    out.reserve(N);
     std::vector<std::iter_value_t<In>> in(first,last);
-    vpermutations(in,v,R,K);
-    return R;
+    vpermutations(in,v,out,K);
+    return out;
 }
 
+template<input_set In, std::integral T>
+void vcombinations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 
+    std::vector<std::vector<std::ranges::range_value_t<In>>>& out, T K)
+{
+    if(std::ranges::size(pref) == static_cast<size_t>(K))
+    {
+        out.push_back(pref);
+    }
+    else
+    {
+        for(std::size_t i{};i<std::ranges::size(in);++i)
+        {
+            std::vector<std::ranges::range_value_t<In>> rem(std::ranges::cbegin(in)+i+1,std::ranges::cend(in));
+            pref.push_back(*(std::ranges::cbegin(in)+i));
+            vcombinations(rem,pref,out,K);
+            pref.pop_back();
+        }
+    }
+}
+
+//returns the combinations, without repetition, of elements of in taken K to K as a vector of vectors
+//the elements are considered distincts
+//0 <= K <= size(in)
+export template<input_set In, std::integral T>
+std::vector<std::vector<std::ranges::range_value_t<In>>> vcombinations(const In& in, T K)
+{
+    std::vector<std::ranges::range_value_t<In>> v;
+    v.reserve(static_cast<size_t>(K));
+    size_t N{static_cast<size_t>(ncombinations(static_cast<size_t>(std::ranges::size(in)),static_cast<size_t>(K)))};
+    std::vector<std::vector<std::ranges::range_value_t<In>>> out;
+    out.reserve(N);
+    vcombinations(in,v,out, K);
+    return out;
+}
+
+//returns the combinations, without repetition, of elements in the range [first,last) taken K to K
+//the elements are considered distincts
+//0 <= K <= distance(last,first)
+export template<input_it In, std::sentinel_for<In>S, std::integral T>
+std::vector<std::vector<std::iter_value_t<In>>> vcombinations(const In& first, const S& last, T K)
+{
+    std::vector<std::iter_value_t<In>> v;
+    v.reserve(static_cast<size_t>(K));
+    size_t N{static_cast<size_t>(ncombinations(static_cast<size_t>(std::distance(first,last)),static_cast<size_t>(K)))};
+    std::vector<std::vector<std::iter_value_t<In>>> out;
+    out.reserve(N);
+    std::vector<std::iter_value_t<In>> in(first,last);
+    vcombinations(in,v,out,K);
+    return out;
+}
 }

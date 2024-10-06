@@ -25,7 +25,7 @@ namespace combinatorics{
 //-----------------------------------------concepts------------------------------------------------
 //input_set models the set of elements on which the algorithms are applied
 template<typename InR>
-concept input_set = std::ranges::input_range<InR> && std::ranges::sized_range<InR>&&
+concept input_rdmacc = std::ranges::random_access_range<InR> && std::ranges::sized_range<InR>&&
 std::copy_constructible<std::ranges::range_value_t<InR>> && std::destructible<std::ranges::range_value_t<InR>>;
 
 //input_it models the iterators used to indicate a range of elements
@@ -249,7 +249,7 @@ double npermutations_lr(T N, std::initializer_list<T> IL)
 
 //------------------------------input_set and input_it algorithms------------------------------
 
-template<input_set In, std::integral T>
+template<input_rdmacc In, std::integral T>
 void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 
     std::vector<std::vector<std::ranges::range_value_t<In>>>& out, T K)
 {
@@ -273,7 +273,7 @@ void vpermutations(const In& in, std::vector<std::ranges::range_value_t<In>>& pr
 //returns the K-permutations, without repetition, of elements of in
 //the elements are considered distincts
 //0 <= K <= size(in)
-template<input_set In, std::integral T>
+template<input_rdmacc In, std::integral T>
 std::vector<std::vector<std::ranges::range_value_t<In>>> vpermutations(const In& in, T K)
 {
     std::vector<std::ranges::range_value_t<In>> v;
@@ -301,7 +301,7 @@ std::vector<std::vector<std::iter_value_t<In>>> vpermutations(const In& first, c
     return out;
 }
 
-template<input_set In, std::integral T>
+template<input_rdmacc In, std::integral T>
 void vcombinations(const In& in, std::vector<std::ranges::range_value_t<In>>& pref, 
     std::vector<std::vector<std::ranges::range_value_t<In>>>& out, T K)
 {
@@ -324,7 +324,7 @@ void vcombinations(const In& in, std::vector<std::ranges::range_value_t<In>>& pr
 //returns the combinations, without repetition, of elements of in taken K to K as a vector of vectors
 //the elements are considered distincts
 //0 <= K <= size(in)
-export template<input_set In, std::integral T>
+export template<input_rdmacc In, std::integral T>
 std::vector<std::vector<std::ranges::range_value_t<In>>> vcombinations(const In& in, T K)
 {
     std::vector<std::ranges::range_value_t<In>> v;

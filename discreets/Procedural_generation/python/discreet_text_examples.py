@@ -28,7 +28,7 @@ def draw_weierstrass():
     intervals = 10000
 # domain points where the function will be evaluated
     xpoints = np.arange(start,stop,((stop-start)/intervals))
-# print the function graph
+# prints the function graph
     plt.plot(xpoints,weierstrass(xpoints, 600))
     plt.show()
 
@@ -46,7 +46,7 @@ def fibonacci_word(n):
         return "01"
     return fibonacci_word(n - 1) + fibonacci_word(n - 2)
 
-# draw the curve using turtle graphics
+# draws the curve using turtle graphics
 # word is the Fibonacci word, leng is the legth of the segment used in drawing
 def draw_fibonacci_curve(word, leng):
     for i, c in enumerate(word, 1):
@@ -154,7 +154,7 @@ def launch_turtle_binary():
 #---------------------------------Cantor set------------------------------------
 
 # constructs one step of the cantor set l-system
-# step of modification of the original segment
+# step indicates the step of modification of the original segment
 def cantorsetsystem(step):
     lsys='A' # initial string
     while step>1:
@@ -173,7 +173,7 @@ def cantorsetsystem(step):
         step-=1
     return lsys
 
-# draw cantor set. 
+# draws cantor set. 
 # origlen is the length of the original segment
 # iterartions is the number of iterations to be executed
 def drawcantorset(iteartions,origlen):

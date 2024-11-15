@@ -14,9 +14,8 @@ Environment configuration:
 
 #include <ranges>//At the time of writing g++ still doesn't fully support module implemmentation of the std
 #include <cmath>
-#include <exception>
+#include <stdexcept>
 #include <limits>
-#include <cassert>
 #include <concepts>
 #include <vector>
 

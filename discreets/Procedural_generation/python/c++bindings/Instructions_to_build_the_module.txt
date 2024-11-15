@@ -6,22 +6,22 @@ This manual explains how to build the Python shared module file necessary for th
 Pybind11 is the library we need to build binding code between C++ and Python. See more on
 https://pybind11.readthedocs.io/en/stable
 
-2-Get CMake. There many ways you can install CMake, mine came with a bunch of others binaries (including gcc compilers) from https://winlibs.com/. You can also intall from the official website https://cmake.org/, here you can get even a GUI for CMake projects called cmake-gui.
+2-Get CMake. There are many ways you can install CMake, mine came with a bunch of others binaries (including gcc compilers) from https://winlibs.com/. You can also download it from the official website https://cmake.org/, there you can even get a GUI for CMake projects called cmake-gui.
 
 3-Adjust "Path" on the CMakeLists.txt file in c++bindings folder
 
-4-Create a subfolder called build, go into it, open a command line interface (PowerShell, Bashh, etc.) there, call the following
+4-Create a subfolder called build, go into it, open a command line interface (PowerShell, Bash, etc.) there, execute the following
 	cmake -G "Generator option" ../
 
-"Generator option" depends on the build system you use. For example if you want a Python module for a Microsoft installation of Python I recomend 
-"Generator option" = "Visual Studio 17 2022" (you need VS 2022 installed)
+"Generator option" depends on the build system you use. For example if you want a Python module for a Windows version of Python I recommend using 
+the option "Visual Studio 17 2022" (you need VS 2022 installed).
 There are other options: "Ninja", "Unix Makefiles", "XCode". See more on https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
 
-5-Now, still from build folder, on command line interface, call
+5-Now, still from build folder, on command line interface, execute
 	cmake --build . --config Release
 
-If everything went well it should be a shared library (extension .pyd on Windows and .so on Linux) file called something like "Elite_planets" in the build folder or inside a Release subfolder in the build folder (you only need this file, everything else generated can be deleted).
+If everything went well a shared library file (extension .pyd on Windows and .so on Linux) called something like "Elite_planets" was built in the build folder or inside a Release subfolder in the build folder (you only need this file, everything else generated can be deleted).
 
 6-At last adjust Planets.py and Draw_Planets.py paths according to your case
 
-Now you cand visualize simple representations of each planet in the sequence of Elite game. You can adapt all modules and algorithms if you want more elaborate drawings. 
+Now you can visualize simple representations of each planet in the sequence of Elite game. You can adapt all modules and algorithms if you want more elaborate drawings. 

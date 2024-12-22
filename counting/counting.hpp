@@ -5,8 +5,8 @@ as I find new ways of improving performance and design.
 
 Author: Alan Teixeira
 */
-#ifndef COMBINATORICS_HPP
-#define COMBINATORICS_HPP
+#ifndef COUNTING_HPP
+#define COUNTING_HPP
 
 #include <ranges>//At the time of writing g++ still doesn't fully support module implemmentation of the std
 #include <cmath>
